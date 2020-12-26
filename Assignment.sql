@@ -1,5 +1,8 @@
 USE bankbranchsystem;
 # Customer Identity
+drop table customer_identity;
+drop table customer;
+
 create table customer_identity(
 cust_icno varchar(12) primary key,
 cust_name varchar(40),
@@ -17,14 +20,13 @@ cust_id int primary key,
 cust_maritalstatus varchar(1),
 cust_dependentno int,
 cust_occupation varchar(20),
-cust_epfno varchar(20),  ## pls take note on actual no
+cust_epfno varchar(8),  ## pls take note on actual no
 cust_income int,
 cust_phoneno varchar(20),
 cust_email varchar(20),
 cust_icno varchar(12),
 foreign key(cust_icno) references customer_identity(cust_icno) on delete cascade
 );
-
 ## Deposit Details
 create table deposit_details(
 de_type varchar(1) primary key, ## C F
@@ -113,7 +115,7 @@ emp_position varchar(20), ##fk
 emp_icno varchar(12), ##fk
 emp_maritalstatus varchar(1),
 emp_dependent int,
-emp_epfno varchar(20),
+emp_epfno varchar(8),
 emp_username varchar(20),
 emp_password varchar(12),
 emp_education varchar(100),
