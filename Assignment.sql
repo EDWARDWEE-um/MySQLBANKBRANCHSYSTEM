@@ -52,7 +52,9 @@ trans_type varchar(20),
 de_id int ## have to add fk de_id
 );
 
-describe deposit_amount;
+alter table transaction add foreign key(de_id) references deposit_account(de_id) on delete set null;
+
+describe transaction;
 
 ## Loan Details 
 create table loan_details(
