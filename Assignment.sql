@@ -90,6 +90,8 @@ inv datetime,
 foreign key(inv_type) references investment_details(inv_type) on delete set null
 );
 
+alter table investment_account rename column inv to inv_date;   
+
 
 
 # Employee Indentity
@@ -138,9 +140,10 @@ add foreign key (emp_supervisorid) references employee(emp_id) on delete set nul
 
 ## Insert data time
 insert into customer_identity values('881110105641','Edwardo Wee','M',35,'8, Jalan Jasa Dua 25/27b,Taman Sri Muda,40400 Shah Alam,Selangor','Chinese','Buddhist','Malaysian');
-insert into customer_identity values('950211085345','Nur Azrina Bin Nik Adam','F',22,'8, 21-1, Jalan SS 18/5b, Ss 18, 47500 Subang Jaya, Selangor','Malay','Islam','Malaysian');
+insert into customer_identity values('950211085345','Nur Azrina Binti Nik Adam','F',22,'8, 21-1, Jalan SS 18/5b, Ss 18, 47500 Subang Jaya, Selangor','Malay','Islam','Malaysian');
 insert into customer_identity values('001212025222','Siva A/L Muthu ','M',25,'15, Persiaran Mulia, Usj 14, 47630 Subang Jaya, Selangor','Indian','Hindu','Malaysian');
 select * from customer_identity;
+
 
 insert into customer values(1,'S',0,'Doctor','11111111',30000,'0122272833','edwardo@gmail.com','881110105641');
 insert into customer values(2,'M',2,'Operator','22222222',2500,'0185272530','nurazrina@gmail.com','950211085345');
@@ -179,6 +182,7 @@ insert into transaction values(1,4000,'2020-11-11 11:59:33','Atm Withdrawal',1);
 insert into transaction values(2,30,'2020-12-12 10:59:40','Cash Deposit',2);
 insert into transaction values(3,200,'2020-02-11 00:19:36','Instant Transfer',3);
 select * from transaction;
+update transaction set de_id = 2 where trans_id = 3;
 
 insert into employee_job values('Manager',10000);
 insert into employee_job values('Teller',2000);
@@ -196,3 +200,60 @@ insert into employee values(1,'Manager','690101103333','M',2,'44444444','khai_sh
 insert into employee values(2,'Teller','730529104736','M',3,'55555555','khairul_niz','123457','Bachelor of Economics, USM','0172234472',1);
 insert into employee values(3,'Customer Service','801120042371','M',1,'66666666','nathan_da','123458','Bachelor of Accounting, UUM','0193184721',1);
 select * from employee;
+
+
+
+
+
+
+
+
+
+## Names of employees, age, sex , their roles ,salary ,and stays in subang jaya 
+select emp_name,emp_icno, emp_age , emp_sex, emp_position, emp_salary
+from employee 
+inner join employee_identity using(emp_icno) 
+inner join employee_job using(emp_position) 
+where emp_address like '%Subang Jaya%'; 
+
+
+## Calculation of interest rates
+# Create new columns called years and total
+# Filter out Fixed Account only
+# Join both deposit_account and deposit_details
+select  * , timestampdiff(year, de_opendate, de_closedate) as years, round((de_initialamount * power((de_interest + 1),timestampdiff(year, de_opendate, de_closedate)))) as total  
+from deposit_account 
+inner join 
+deposit_details using(de_type)
+where deposit_account.de_type = 'F' ;
+
+## Transaction Calculation 
+# If atm withdrawal, instant transfer, atm withdrawal ,current - trans amount
+# Else, current + trans amount 
+select trans_id, trans_type, trans_amount, de_currentbalance,  
+case 
+  when trans_type = "ATM Withdrawal" or trans_type = "Instant Transfer" then de_currentbalance - trans_amount
+  when trans_type = "Cash Deposit" then  de_currentbalance + trans_amount
+  else null
+end as new_amount  
+from transaction 
+inner join  
+deposit_account using (de_id); 
+
+## Calculate the avg age, avg income and total income of customers based on race in the bank
+select cust_ethnicity ,round(avg (cust_age)) ,avg(cust_income) , sum(cust_income)
+from customer 
+left join 
+customer_identity
+using(cust_icno) group by cust_ethnicity; 
+
+## Calculate the current investment growth
+select * ,
+timestampdiff(year, inv_date , current_timestamp() ) as current_duration , 
+round(inv_amount * power(inv_growth+1,timestampdiff(year, inv_date , current_timestamp() ))) as current_amount, 
+round(inv_amount * power((1+inv_growth),inv_duration)) as  final_duration
+from investment_account 
+inner join 
+investment_details using(inv_type);
+
+
